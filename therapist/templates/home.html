@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Soluna - Your AI Therapist</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: "Segoe UI", sans-serif;
+        background: #eaf4f4;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 100vh;
+        padding: 30px 15px;
+      }
+
+      .chat-container {
+        width: 100%;
+        max-width: 600px;
+        background: #fff;
+        border-radius: 15px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        font-size: 1.5rem;
+        color: #2b4c59;
+        margin-bottom: 15px;
+      }
+
+      .chat-box {
+        flex: 1;
+        max-height: 70vh;
+        overflow-y: auto;
+        background: #fdfdfd;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #eee;
+      }
+
+      .message {
+        margin: 10px 0;
+        padding: 12px 16px;
+        border-radius: 15px;
+        max-width: 80%;
+        line-height: 1.6;
+        font-size: 1rem;
+        white-space: pre-wrap;
+      }
+
+      .message.user {
+        background-color: #d9f8e5;
+        align-self: flex-end;
+        text-align: right;
+        margin-left: auto;
+        color: #1a3c34;
+      }
+
+      .message.therapist {
+        background-color: #f1f3f6;
+        align-self: flex-start;
+        text-align: left;
+        margin-right: auto;
+        color: #3a3a3a;
+      }
+
+      .chat-input {
+        display: flex;
+        gap: 10px;
+      }
+
+      .chat-input textarea {
+        flex: 1;
+        padding: 12px;
+        border-radius: 10px;
+        border: 1px solid #ccc;
+        resize: none;
+        font-size: 1rem;
+      }
+
+      .chat-input button {
+        padding: 10px 20px;
+        border: none;
+        background-color: #4caf50;
+        color: white;
+        border-radius: 10px;
+        font-size: 1rem;
+        cursor: pointer;
+      }
+
+      .chat-input button:hover {
+        background-color: #45a049;
+      }
+
+      .loading {
+        font-style: italic;
+        color: #aaa;
+      }
+
+      #start-message {
+        text-align: center;
+        color: #888;
+        font-style: italic;
+        margin-top: 20px;
+      }
+      .logout-btn {
+        float: right;
+        background-color: #444;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        margin-top: -4px;
+        margin-right: 10px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s ease;
+      }
+
+      .logout-btn:hover {
+        background-color: #666;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="chat-container">
+      <div class="header">
+        🌙 Soluna – Your AI Therapist
+        <button id="logout-btn" class="logout-btn" title="Logout">
+          🚪 Logout
+        </button>
+      </div>
+
+      <div class="chat-box" id="chat-box">
+        <p id="start-message">Start the conversation by typing below 👇</p>
+      </div>
+
+      <div class="chat-input">
+        <textarea
+          id="user-prompt"
+          rows="2"
+          placeholder="Type your thoughts here..."
+          required
+        ></textarea>
+        <button id="send-btn">Send</button>
+        <button id="mic-btn" title="Speak your message">🎤</button>
+      </div>
+      <br />
+      <br />
+      <button id="talk-btn">🗣️ Talk to Soluna</button>
+      <button id="stop-talk-btn" style="margin-top: 10px; display: none">
+        ❌ Stop Talking
+      </button>
+    </div>
+
+    <script>
+      document
+        .getElementById("send-btn")
+        .addEventListener("click", async function () {
+          const promptInput = document.getElementById("user-prompt");
+          const prompt = promptInput.value.trim();
+          const chatBox = document.getElementById("chat-box");
+          const startMessage = document.getElementById("start-message");
+
+          if (!prompt) return;
+
+          // Hide start message
+          if (startMessage) startMessage.style.display = "none";
+
+          // Add user message
+          chatBox.innerHTML += `<div class="message user">${prompt}</div>`;
+          chatBox.scrollTop = chatBox.scrollHeight;
+
+          promptInput.value = "";
+
+          // Add typing/loading indicator
+          const loader = document.createElement("div");
+          loader.className = "message therapist loading";
+          loader.innerText = "Typing...";
+          chatBox.appendChild(loader);
+          chatBox.scrollTop = chatBox.scrollHeight;
+
+          // Send to backend
+          const response = await fetch("/chat-api/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": getCSRFToken(),
+            },
+            body: JSON.stringify({ prompt }),
+          });
+
+          const data = await response.json();
+
+          // Remove loading indicator
+          loader.remove();
+
+          // Add therapist response
+          chatBox.innerHTML += `<div class="message therapist">${data.response}</div>`;
+          chatBox.scrollTop = chatBox.scrollHeight;
+        });
+
+      // Handle Enter key
+      const textarea = document.getElementById("user-prompt");
+      textarea.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault(); // prevent newline
+          document.getElementById("send-btn").click();
+        }
+      });
+
+      function getCSRFToken() {
+        const cookieValue = document.cookie
+          .split("; ")
+          .find((row) => row.startsWith("csrftoken="))
+          ?.split("=")[1];
+        return cookieValue;
+      }
+    </script>
+
+    <script>
+      const micBtn = document.getElementById("mic-btn");
+      micBtn.addEventListener("click", () => {
+        const recognition = new (window.SpeechRecognition ||
+          window.webkitSpeechRecognition)();
+        recognition.lang = "en-US";
+        recognition.interimResults = false;
+
+        recognition.onresult = function (event) {
+          const transcript = event.results[0][0].transcript;
+          document.getElementById("user-prompt").value = transcript;
+        };
+
+        recognition.onerror = function (event) {
+          alert("Error using mic: " + event.error);
+        };
+
+        recognition.start();
+      });
+    </script>
+
+    <script>
+      document
+        .getElementById("logout-btn")
+        .addEventListener("click", async () => {
+          // Optional: confirm logout
+          if (!confirm("Are you sure you want to logout?")) return;
+
+          // Call your logout API or redirect
+          await fetch("/logout/", {
+            method: "POST",
+            headers: {
+              "X-CSRFToken": getCSRFToken(),
+            },
+          });
+
+          // Redirect to login or home page
+          window.location.href = "/login/";
+        });
+    </script>
+
+    <script>
+      const talkBtn = document.getElementById("talk-btn");
+      const stopTalkBtn = document.getElementById("stop-talk-btn");
+      const chatBox = document.getElementById("chat-box");
+
+      const recognition = new (window.SpeechRecognition ||
+        window.webkitSpeechRecognition)();
+      recognition.lang = "en-US";
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+      recognition.continuous = false;
+
+      let isTalking = false;
+
+      talkBtn.addEventListener("click", () => {
+        if (isTalking) return;
+        isTalking = true;
+        talkBtn.innerText = "🎙️ Listening...";
+        stopTalkBtn.style.display = "inline-block";
+        recognition.start();
+      });
+
+      stopTalkBtn.addEventListener("click", () => {
+        isTalking = false;
+        recognition.stop();
+        speechSynthesis.cancel();
+        talkBtn.innerText = "🗣️ Talk to Soluna";
+        stopTalkBtn.style.display = "none";
+      });
+
+      recognition.onresult = async (event) => {
+        const userSpeech = event.results[0][0].transcript;
+        talkBtn.innerText = "⏳ Thinking...";
+
+        // Show user message
+        chatBox.innerHTML += `<div class="message user">${userSpeech}</div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        // Show loading
+        const loader = document.createElement("div");
+        loader.className = "message therapist loading";
+        loader.innerText = "Thinking...";
+        chatBox.appendChild(loader);
+
+        // Send to backend
+        const response = await fetch("/chat-api/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCSRFToken(),
+          },
+          body: JSON.stringify({ prompt: userSpeech }),
+        });
+
+        const data = await response.json();
+        loader.remove();
+
+        // Show AI reply
+        chatBox.innerHTML += `<div class="message therapist">${data.response}</div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        // Speak response
+        // Use ElevenLabs TTS API
+        const ttsResponse = await fetch("/tts/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCSRFToken(),
+          },
+          body: JSON.stringify({ text: data.response }),
+        });
+
+        if (ttsResponse.ok) {
+          const blob = await ttsResponse.blob();
+          const audioUrl = URL.createObjectURL(blob);
+          const audio = new Audio(audioUrl);
+          audio.play();
+        } else {
+          alert("Failed to play voice.");
+        }
+      };
+
+      recognition.onerror = (e) => {
+        if (e.error === "no-speech" && isTalking) {
+          recognition.start(); // retry if silence
+          return;
+        }
+        isTalking = false;
+        talkBtn.innerText = "🗣️ Talk to Soluna";
+        stopTalkBtn.style.display = "none";
+        alert("Error: " + e.error);
+      };
+
+      function getCSRFToken() {
+        const cookieValue = document.cookie
+          .split("; ")
+          .find((row) => row.startsWith("csrftoken="))
+          ?.split("=")[1];
+        return cookieValue;
+      }
+    </script>
+  </body>
+</html>

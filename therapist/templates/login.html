@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login to Soluna</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-br from-indigo-100 to-white flex items-center justify-center min-h-screen">
+
+    <div class="bg-white p-8 rounded-xl shadow-md w-full max-w-sm">
+        <h2 class="text-2xl font-bold mb-6 text-center text-indigo-700">Welcome Back to <span class="text-indigo-500">Soluna 🌙</span></h2>
+
+        {% if form.errors %}
+            <div class="bg-red-100 text-red-700 px-4 py-2 rounded mb-4 text-sm">
+                Invalid username or password
+            </div>
+        {% endif %}
+
+        {% load widget_tweaks %}
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            
+            {% for field in form %}
+                <div>
+                    <label class="block text-gray-700 text-sm mb-1">{{ field.label }}</label>
+                    {{ field|add_class:"w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400" }}
+                    {% if field.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ field.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <button type="submit" class="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 transition">Login</button>
+        </form>
+
+        <p class="mt-6 text-center text-sm text-gray-600">
+            Don’t have an account? 
+            <a href="{% url 'register' %}" class="text-indigo-600 font-medium hover:underline">Register here</a>
+        </p>
+    </div>
+
+</body>
+</html>
