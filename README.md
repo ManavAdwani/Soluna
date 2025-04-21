@@ -17,6 +17,11 @@ Soluna is an empathetic AI-powered therapist web app built using Django and enha
 - 🎨 Clean, Friendly UI – Built with responsive HTML/CSS templates and animations.
 
 
+## Screenshots
+
+![App Screenshot](https://i.ibb.co/KjtG8Pq8/Capture.png)
+
+
 ## 🛠️ Tech Stack
 
 **Client:** HTML/CSS/JS
