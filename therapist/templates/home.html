@@ -207,6 +207,7 @@
           // Add therapist response
           chatBox.innerHTML += `<div class="message therapist">${data.response}</div>`;
           chatBox.scrollTop = chatBox.scrollHeight;
+          console.log(data.response);
         });
 
       // Handle Enter key
@@ -278,9 +279,10 @@
       recognition.lang = "en-US";
       recognition.interimResults = false;
       recognition.maxAlternatives = 1;
-      recognition.continuous = false;
+      recognition.continuous = true; // Enable continuous mode
 
       let isTalking = false;
+      let isProcessing = false;
 
       talkBtn.addEventListener("click", () => {
         if (isTalking) return;
@@ -299,7 +301,11 @@
       });
 
       recognition.onresult = async (event) => {
-        const userSpeech = event.results[0][0].transcript;
+        if (isProcessing) return; // Don't process new results while still handling previous one
+        isProcessing = true;
+
+        const userSpeech =
+          event.results[event.results.length - 1][0].transcript;
         talkBtn.innerText = "⏳ Thinking...";
 
         // Show user message
@@ -312,53 +318,76 @@
         loader.innerText = "Thinking...";
         chatBox.appendChild(loader);
 
-        // Send to backend
-        const response = await fetch("/chat-api/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": getCSRFToken(),
-          },
-          body: JSON.stringify({ prompt: userSpeech }),
-        });
+        try {
+          // Send to backend
+          const response = await fetch("/chat-api/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": getCSRFToken(),
+            },
+            body: JSON.stringify({ prompt: userSpeech }),
+          });
 
-        const data = await response.json();
-        loader.remove();
+          const data = await response.json();
+          loader.remove();
 
-        // Show AI reply
-        chatBox.innerHTML += `<div class="message therapist">${data.response}</div>`;
-        chatBox.scrollTop = chatBox.scrollHeight;
+         
 
-        // Speak response
-        // Use ElevenLabs TTS API
-        const ttsResponse = await fetch("/tts/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": getCSRFToken(),
-          },
-          body: JSON.stringify({ text: data.response }),
-        });
+          // Speak response
+          const ttsResponse = await fetch("/tts/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": getCSRFToken(),
+            },
+            body: JSON.stringify({ text: data.response }),
+          });
 
-        if (ttsResponse.ok) {
-          const blob = await ttsResponse.blob();
-          const audioUrl = URL.createObjectURL(blob);
-          const audio = new Audio(audioUrl);
-          audio.play();
-        } else {
-          alert("Failed to play voice.");
+          // Show AI reply
+          chatBox.innerHTML += `<div class="message therapist">${data.response}</div>`;
+          chatBox.scrollTop = chatBox.scrollHeight;
+          if (ttsResponse.ok) {
+            const blob = await ttsResponse.blob();
+            const audioUrl = URL.createObjectURL(blob);
+            const audio = new Audio(audioUrl);
+            audio.play();
+
+            // When audio finishes, resume listening
+            audio.onended = () => {
+              isProcessing = false;
+              talkBtn.innerText = "🎙️ Listening...";
+            };
+          } else {
+            alert("Failed to play voice.");
+            isProcessing = false;
+            talkBtn.innerText = "🎙️ Listening...";
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          loader.remove();
+          isProcessing = false;
+          talkBtn.innerText = "🎙️ Listening...";
         }
       };
 
       recognition.onerror = (e) => {
-        if (e.error === "no-speech" && isTalking) {
-          recognition.start(); // retry if silence
+        if (e.error === "no-speech") {
+          // In continuous mode, we don't need to restart manually
           return;
         }
         isTalking = false;
+        isProcessing = false;
         talkBtn.innerText = "🗣️ Talk to Soluna";
         stopTalkBtn.style.display = "none";
-        alert("Error: " + e.error);
+        console.error("Recognition error:", e.error);
+      };
+
+      recognition.onend = () => {
+        if (isTalking && !isProcessing) {
+          // Automatically restart recognition if still in talking mode
+          recognition.start();
+        }
       };
 
       function getCSRFToken() {

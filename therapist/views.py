@@ -94,7 +94,7 @@ def chat_api(request):
         response = requests.post(
             url="https://openrouter.ai/api/v1/chat/completions",
             headers={
-                "Authorization": "Bearer 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",
+                "Authorization": "Bearer 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",
                 "Content-Type": "application/json",
                 "HTTP-Referer": "http://127.0.0.1:8000/",
                 "X-Title": "AI Therapist"
@@ -105,7 +105,10 @@ def chat_api(request):
             },
         )
 
+        print(response)
+
         raw_response = response.json().get("choices", [{}])[0].get("message", {}).get("content", "")
+        
         formatted_response = markdown_to_html(raw_response)
 
         # Save chat only for the current user
@@ -114,5 +117,6 @@ def chat_api(request):
             user_input=user_prompt,
             ai_response=raw_response
         )
+       
 
         return JsonResponse({"response": formatted_response})
