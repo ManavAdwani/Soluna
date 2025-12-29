@@ -2,6 +2,8 @@
 
 <div align="center">
  <img src="https://i.ibb.co/VWyPfdC5/screencapture-localhost-8000-2025-12-29-13-27-10.png" alt="screencapture localhost 8000 2025 12 29 13 27 10" border="0">
+ <img src="https://i.ibb.co/spk5Krhz/screencapture-localhost-8000-2025-12-29-13-32-19.png" alt="screencapture localhost 8000 2025 12 29 13 32 19" border="0">
+ <img src="https://i.ibb.co/tMK0R9yw/screencapture-localhost-8000-dashboard-2025-12-29-13-33-13.png" alt="screencapture localhost 8000 dashboard 2025 12 29 13 33 13" border="0">
 </div>
 
 ## 📖 Overview
