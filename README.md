@@ -1,12 +1,14 @@
-
 # 🌙 Soluna - AI Therapist
 
 <div align="center">
-  <img src="path/to/your/header-image.png" alt="Soluna Dashboard" width="100%" />
+  <img src="https://i.ibb.co/KjtG8Pq8/Capture.png" alt="Soluna Dashboard" width="100%" />
 </div>
 
 ## 📖 Overview
 **Soluna** is a compassionate AI-powered therapy assistant designed to provide a safe, private, and supportive space for users. It combines advanced Large Language Models (LLM) with voice interaction to create a seamless therapeutic experience.
+
+## 💡 Inspiration
+Soluna is built with the belief that mental health support should be accessible, private, and empathetic—whenever you need it.
 
 ## ✨ Key Features
 
@@ -16,19 +18,11 @@ Talk to Soluna naturally using your voice.
 - **Text-to-Speech**: High-quality, soothing voice responses via ElevenLabs.
 - **Visualizer**: Dynamic "Orb" animation that reacts to listening and speaking states.
 
-<div align="center">
-  <img src="path/to/voice-mode.png" alt="Voice Mode" width="800" />
-</div>
-
 ### 💬 Intelligent Chat & History
 - **Session Management**: Organized conversation history (ChatGPT-style).
 - **Context Awareness**: Remembers the context of your current session.
 - **Sidebar**: Easy navigation between past conversations with "New Chat" and "Delete" options.
 - **Premium UI**: Glassmorphic design with smooth transitions and centered layout.
-
-<div align="center">
-  <img src="path/to/chat-history.png" alt="Chat History" width="800" />
-</div>
 
 ### 📊 Emotional Dashboard
 - **Mood Tracking**: Automatically analyzes the sentiment of your conversations (-1 to +1 scale).
@@ -52,7 +46,7 @@ Talk to Soluna naturally using your voice.
 - **Frontend**: HTML5, Vanilla JavaScript, Tailwind CSS
 - **Database**: MySQL
 - **AI Engine**: Meta Llama 3.3 70B (via OpenRouter)
-- **Voice**: ElevenLabs API
+- **Voice**: ElevenLabs API / Web Speech API
 
 ## 🚀 Installation
 
@@ -77,12 +71,6 @@ Talk to Soluna naturally using your voice.
    ```bash
    python manage.py runserver
    ```
-
-## 📸 Screenshots
-
-| Sign In | Dashboard |
-|:---:|:---:|
-| <img src="path/to/signin.png" width="400" /> | <img src="path/to/dashboard.png" width="400" /> |
 
 ## 🛡️ License
 This project is licensed under the MIT License.
