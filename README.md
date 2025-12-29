@@ -1,7 +1,7 @@
 # 🌙 Soluna - AI Therapist
 
 <div align="center">
-  <img src="https://i.ibb.co/KjtG8Pq8/Capture.png" alt="Soluna Dashboard" width="100%" />
+  <img src="https://ibb.co/7JXfHfp0" alt="Soluna Dashboard" width="100%" />
 </div>
 
 ## 📖 Overview
