@@ -10,6 +10,7 @@ from .models import ChatMessage, Conversation
 import requests
 import json
 import re
+from django.conf import settings
 
 
 @csrf_exempt
@@ -132,10 +133,13 @@ def chat_api(request):
 
         messages.append({"role": "user", "content": user_prompt})
 
+        key_status = str(settings.OPENROUTER_API_KEY).strip()
+        print(f"DEBUG: Internal Key Check: {key_status[:10] if key_status else 'None'}")
+        
         response = requests.post(
             url="https://openrouter.ai/api/v1/chat/completions",
             headers={
-                "Authorization": "Bearer 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",
+                "Authorization": f"Bearer {key_status}",
                 "Content-Type": "application/json",
                 "HTTP-Referer": "http://127.0.0.1:8000/",
                 "X-Title": "AI Therapist"
@@ -146,7 +150,13 @@ def chat_api(request):
             },
         )
 
-        print(response)
+        key_status = settings.OPENROUTER_API_KEY
+        print(f"DEBUG: Internal Key Check: {key_status[:10] if key_status else 'None'}")
+        print(f"DEBUG: Status Code: {response.status_code}")
+        print(f"DEBUG: Response Body: {response.text}")
+
+        if response.status_code != 200:
+             return JsonResponse({"error": f"API Error {response.status_code}", "details": response.text}, status=500)
 
         raw_response = response.json().get("choices", [{}])[0].get("message", {}).get("content", "")
         
@@ -324,7 +334,7 @@ def save_journal_entry(request):
              
         # Generate AI Reflection
         # Reusing the OpenRouter logic (simplified)
-        API_KEY = "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"
+        API_KEY = settings.OPENROUTER_API_KEY
         
         system_prompt = "You are a supportive, empathetic therapy AI. Read the user's journal entry and provide a short, deep, validating reflection (max 3 sentences). Do not give advice, just reflect on their feelings."
         
