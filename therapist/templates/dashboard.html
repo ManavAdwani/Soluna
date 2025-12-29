@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soluna - Emotional Analytics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .glass-sidebar {
+            background: rgba(30, 27, 75, 0.85);
+            backdrop-filter: blur(16px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-50 h-screen flex overflow-hidden">
+
+    <!-- Sidebar ( Simplified copy of Home Sidebar for navigation ) -->
+    <aside
+        class="w-64 glass-sidebar h-full text-white flex-col hidden md:flex z-50 transition-all duration-300 relative"
+        id="sidebar-panel">
+        <div class="p-6 flex items-center gap-3">
+            <div
+                class="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-400 to-purple-400 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                <i class="fas fa-moon text-white text-sm"></i>
+            </div>
+            <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-indigo-200">Soluna
+            </h1>
+        </div>
+
+        <!-- Main Action (Redirects to Home) -->
+        <div class="px-4 mb-4">
+            <a href="/"
+                class="w-full bg-white/5 hover:bg-white/10 text-indigo-100 hover:text-white font-medium py-3 px-4 rounded-xl transition flex items-center justify-start gap-3 group border border-white/5">
+                <i class="fas fa-plus ml-1"></i> <span class="group-hover:text-white transition">New Chat</span>
+            </a>
+        </div>
+
+        <nav class="flex-1 px-4 space-y-1">
+            <!-- Chat -->
+            <a href="/"
+                class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 text-white/70 hover:text-white font-medium transition group">
+                <div
+                    class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/20 transition">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <span>Chat</span>
+            </a>
+
+            <!-- Analytics (Active) -->
+            <a href="/dashboard/"
+                class="flex items-center gap-3 p-3 rounded-xl bg-white text-indigo-700 font-bold shadow-lg shadow-indigo-900/10 transition group">
+                <div class="w-8 h-8 rounded-lg bg-indigo-100/50 flex items-center justify-center text-indigo-600">
+                    <i class="fas fa-chart-pie"></i>
+                </div>
+                <span>Analytics</span>
+            </a>
+
+            <!-- Journal -->
+            <a href="/journal/"
+                class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 text-white/70 hover:text-white font-medium transition group">
+                <div
+                    class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/20 transition">
+                    <i class="fas fa-book-open"></i>
+                </div>
+                <span>Journal</span>
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-white/10">
+            <a href="/logout/"
+                class="flex items-center gap-3 p-3 rounded-xl hover:bg-red-500/20 text-red-300 hover:text-red-200 transition text-sm">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full overflow-y-auto custom-scrollbar p-6 md:p-10">
+
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800">Your Emotional Journey</h1>
+                <p class="text-gray-500 mt-1">Insights from the last 7 days</p>
+            </div>
+            <!-- Mobile Toggle would go here if fully responsive, keeping simple for mvp -->
+            <a href="/" class="md:hidden text-indigo-600 bg-indigo-50 p-2 rounded-lg">
+                <i class="fas fa-arrow-left"></i> Back to Chat
+            </a>
+        </header>
+
+        <!-- Key Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Total Sessions -->
+            <div class="glass-panel p-6 rounded-2xl shadow-sm flex items-center gap-4">
+                <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xl">
+                    <i class="fas fa-history"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 font-medium">Total Sessions</p>
+                    <h3 class="text-2xl font-bold text-gray-800" id="total-sessions">--</h3>
+                </div>
+            </div>
+
+            <!-- Messages Exchanged -->
+            <div class="glass-panel p-6 rounded-2xl shadow-sm flex items-center gap-4">
+                <div
+                    class="w-12 h-12 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-xl">
+                    <i class="fas fa-comment-dots"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 font-medium">Messages</p>
+                    <h3 class="text-2xl font-bold text-gray-800" id="total-messages">--</h3>
+                </div>
+            </div>
+
+            <!-- Current Mood (Last Average) -->
+            <div class="glass-panel p-6 rounded-2xl shadow-sm flex items-center gap-4">
+                <div
+                    class="w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xl">
+                    <i class="fas fa-smile"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 font-medium">Recent Mood</p>
+                    <h3 class="text-2xl font-bold text-gray-800" id="current-mood">--</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Area -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+
+            <!-- Main Line Chart (Mood Over Time) -->
+            <div class="glass-panel p-6 rounded-2xl shadow-sm lg:col-span-2">
+                <h3 class="text-lg font-semibold text-gray-800 mb-6">Mood Over Time</h3>
+                <div class="relative h-64 w-full">
+                    <canvas id="moodChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Doughnut Chart (Emotion Distribution) -->
+            <div class="glass-panel p-6 rounded-2xl shadow-sm">
+                <h3 class="text-lg font-semibold text-gray-800 mb-6">Emotion Mix</h3>
+                <div class="relative h-48 w-full flex justify-center">
+                    <canvas id="emotionChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        async function loadDashboardData() {
+            try {
+                const response = await fetch('/api/dashboard/');
+                const data = await response.json();
+
+                // Update Stats
+                document.getElementById('total-sessions').innerText = data.total_sessions;
+                document.getElementById('total-messages').innerText = data.total_messages;
+                document.getElementById('current-mood').innerText = data.recent_mood; // Use exact label from backend
+
+
+                // --- moodChart (Line) ---
+                const ctxMood = document.getElementById('moodChart').getContext('2d');
+                new Chart(ctxMood, {
+                    type: 'line',
+                    data: {
+                        labels: data.dates,
+                        datasets: [{
+                            label: 'Sentiment Score',
+                            data: data.scores,
+                            borderColor: '#6366f1', // Indigo 500
+                            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                            borderWidth: 3,
+                            tension: 0.4, // Smooth curves
+                            pointBackgroundColor: '#fff',
+                            pointBorderColor: '#4f46e5',
+                            pointRadius: 4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                min: -1,
+                                max: 1,
+                                grid: { color: 'rgba(0,0,0,0.05)' }
+                            },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+
+                // --- emotionChart (Doughnut) ---
+                const ctxEmotion = document.getElementById('emotionChart').getContext('2d');
+                // Generate colors dynamically or use fixed palette
+                const colors = ['#818cf8', '#34d399', '#f472b6', '#fbbf24', '#60a5fa'];
+
+                new Chart(ctxEmotion, {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.emotion_labels,
+                        datasets: [{
+                            data: data.emotion_data,
+                            backgroundColor: colors,
+                            borderWidth: 0,
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '70%',
+                        plugins: {
+                            legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } }
+                        }
+                    }
+                });
+
+            } catch (error) {
+                console.error("Error loading dashboard data:", error);
+            }
+        }
+
+        loadDashboardData();
+    </script>
+</body>
+
+</html>

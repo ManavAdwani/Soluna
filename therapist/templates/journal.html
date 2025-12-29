@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soluna - Journal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .glass-sidebar {
+            background: rgba(30, 27, 75, 0.85);
+            backdrop-filter: blur(16px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .ai-thinking {
+            animation: pulse-glow 2s infinite;
+        }
+
+        @keyframes pulse-glow {
+            0% {
+                box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(99, 102, 241, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-50 h-screen flex overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-64 glass-sidebar h-full text-white flex-col hidden md:flex z-50" id="sidebar-panel">
+        <div class="p-6 flex items-center gap-3">
+            <div
+                class="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-400 to-purple-400 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                <i class="fas fa-moon text-white text-sm"></i>
+            </div>
+            <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-indigo-200">Soluna
+            </h1>
+        </div>
+
+        <!-- Main Action (Redirects to Home) -->
+        <div class="px-4 mb-4">
+            <a href="/"
+                class="w-full bg-white/5 hover:bg-white/10 text-indigo-100 hover:text-white font-medium py-3 px-4 rounded-xl transition flex items-center justify-start gap-3 group border border-white/5">
+                <i class="fas fa-plus ml-1"></i> <span class="group-hover:text-white transition">New Chat</span>
+            </a>
+        </div>
+
+        <nav class="flex-1 px-4 space-y-1">
+            <!-- Chat -->
+            <a href="/"
+                class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 text-white/70 hover:text-white font-medium transition group">
+                <div
+                    class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/20 transition">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <span>Chat</span>
+            </a>
+
+            <!-- Analytics -->
+            <a href="/dashboard/"
+                class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 text-white/70 hover:text-white font-medium transition group">
+                <div
+                    class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/20 transition">
+                    <i class="fas fa-chart-pie"></i>
+                </div>
+                <span>Analytics</span>
+            </a>
+
+            <!-- Journal (Active) -->
+            <a href="/journal/"
+                class="flex items-center gap-3 p-3 rounded-xl bg-white text-indigo-700 font-bold shadow-lg shadow-indigo-900/10 transition group">
+                <div class="w-8 h-8 rounded-lg bg-indigo-100/50 flex items-center justify-center text-indigo-600">
+                    <i class="fas fa-book-open"></i>
+                </div>
+                <span>Journal</span>
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-white/10">
+            <a href="/logout/"
+                class="flex items-center gap-3 p-3 rounded-xl hover:bg-red-500/20 text-red-300 hover:text-red-200 transition text-sm">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden p-6 gap-6">
+
+        <header class="flex justify-between items-center sm:hidden">
+            <h1 class="text-2xl font-bold text-gray-800">Journal</h1>
+            <a href="/" class="text-indigo-600 bg-indigo-50 p-2 rounded-lg"><i class="fas fa-arrow-left"></i></a>
+        </header>
+
+        <!-- Mobile Tabs -->
+        <!-- Mobile Tabs -->
+        <div class="flex lg:hidden bg-indigo-100/50 p-1 rounded-xl mb-4 backdrop-blur-sm">
+            <button onclick="switchTab('write')" id="tab-write"
+                class="flex-1 py-2 rounded-lg text-sm font-medium transition bg-white text-indigo-700 shadow-sm">
+                <i class="fas fa-pen mr-2"></i> Write
+            </button>
+            <button onclick="switchTab('history')" id="tab-history"
+                class="flex-1 py-2 rounded-lg text-sm font-medium text-gray-500 hover:text-indigo-600 transition">
+                <i class="fas fa-history mr-2"></i> History
+            </button>
+        </div>
+
+        <div class="flex-1 flex flex-col lg:flex-row gap-6 h-full overflow-hidden relative">
+
+            <!-- List Column (Past Entries) -->
+            <!-- Hidden on mobile by default, shown on LG -->
+            <div id="col-history"
+                class="hidden lg:flex w-full lg:w-1/3 glass-panel rounded-2xl flex-col h-full overflow-hidden absolute inset-0 lg:static z-10 lg:z-auto bg-white/90 lg:bg-transparent backdrop-blur-xl lg:backdrop-blur-none transition-all duration-300">
+                <div class="p-4 border-b border-gray-100/50 bg-white/30 backdrop-blur-sm">
+                    <h2 class="font-semibold text-gray-700">Past Entries</h2>
+                </div>
+                <div class="flex-1 overflow-y-auto p-4 space-y-3" id="entries-list">
+                    {% for entry in entries %}
+                    <div class="p-4 rounded-xl bg-white/60 border border-white/60 hover:shadow-md transition cursor-pointer group"
+                        onclick="viewEntry('{{ entry.id }}')">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-xs font-bold text-indigo-500 tracking-wide">{{ entry.created_at }}</span>
+                        </div>
+                        <p class="text-sm text-gray-600 line-clamp-2">{{ entry.content }}</p>
+
+                        <!-- Hidden Data for JS -->
+                        <div id="data-content-{{ entry.id }}" class="hidden">{{ entry.content }}</div>
+                        <div id="data-reflection-{{ entry.id }}" class="hidden">{{ entry.ai_reflection }}</div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center text-gray-400 mt-10">
+                        <i class="fas fa-pen-fancy text-4xl mb-3 opacity-20"></i>
+                        <p>No entries yet.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Editor Column -->
+            <!-- Visible on mobile by default -->
+            <div id="col-write"
+                class="flex-1 glass-panel rounded-2xl flex flex-col h-full overflow-hidden relative w-full">
+
+                <!-- Toolbar / Date -->
+                <div
+                    class="p-4 border-b border-gray-100/50 flex justify-between items-center bg-white/30 backdrop-blur-sm">
+                    <button onclick="newEntry()"
+                        class="text-sm font-medium text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-lg transition">
+                        <i class="fas fa-plus mr-1"></i> New Entry
+                    </button>
+                    <span class="text-gray-400 text-sm" id="current-date">New Entry</span>
+                </div>
+
+                <!-- Writing Area -->
+                <div class="flex-1 flex flex-col p-6 overflow-y-auto">
+                    <textarea id="journal-content"
+                        class="w-full h-64 bg-transparent border-none focus:ring-0 text-gray-700 text-lg leading-relaxed resize-none placeholder-gray-400"
+                        placeholder="What's on your mind today?"></textarea>
+
+                    <!-- AI Reflection Box (Hidden initially) -->
+                    <div id="reflection-box"
+                        class="hidden mt-6 bg-indigo-50/50 p-6 rounded-xl border border-indigo-100">
+                        <div class="flex items-center gap-2 mb-2 text-indigo-600 font-medium text-sm">
+                            <i class="fas fa-sparkles"></i> Soluna's Reflection
+                        </div>
+                        <p class="text-gray-700 italic leading-relaxed" id="reflection-text"></p>
+                    </div>
+                </div>
+
+                <!-- Action Bar -->
+                <div class="p-4 bg-white/30 backdrop-blur-sm border-t border-gray-100/50 flex justify-end">
+                    <button id="save-btn" onclick="saveEntry()"
+                        class="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-medium py-2 px-6 rounded-xl shadow-lg transition transform hover:scale-[1.02] flex items-center gap-2">
+                        <span>Save & Reflect</span> <i class="fas fa-feather-alt"></i>
+                    </button>
+                </div>
+
+                <!-- Loading Overlay -->
+                <div id="loading-overlay"
+                    class="hidden absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-10 flex-col gap-3">
+                    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
+                    <p class="text-indigo-600 font-medium animate-pulse">Soluna is reflecting...</p>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // Init
+        document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+        function newEntry() {
+            document.getElementById('journal-content').value = "";
+            document.getElementById('reflection-box').classList.add('hidden');
+            document.getElementById('save-btn').classList.remove('hidden');
+            document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            document.getElementById('journal-content').focus();
+        }
+
+        function viewEntry(id) {
+            const content = document.getElementById(`data-content-${id}`).innerText;
+            const reflection = document.getElementById(`data-reflection-${id}`).innerText;
+
+            document.getElementById('journal-content').value = content;
+            document.getElementById('reflection-text').innerText = reflection;
+            document.getElementById('reflection-box').classList.remove('hidden');
+
+            // Hide save button for viewing mode (simple implementation)
+            document.getElementById('save-btn').classList.add('hidden');
+        }
+
+        async function saveEntry() {
+            const content = document.getElementById('journal-content').value;
+            if (!content.trim()) {
+                alert("Please write something first!");
+                return;
+            }
+
+            const btn = document.getElementById('save-btn');
+            const overlay = document.getElementById('loading-overlay');
+
+            btn.disabled = true;
+            overlay.classList.remove('hidden');
+
+            try {
+                const res = await fetch('/api/journal/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ content: content })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    overlay.classList.add('hidden');
+
+                    // Show Reflection
+                    document.getElementById('reflection-text').innerText = data.reflection;
+                    document.getElementById('reflection-box').classList.remove('hidden');
+                    btn.disabled = false;
+                    btn.classList.add('hidden'); // Hide after saving
+
+                    // Refresh page to update list (lazy way) or append to list
+                    // For now, let's just append neatly
+                    location.reload();
+                } else {
+                    alert("Error: " + data.error);
+                    overlay.classList.add('hidden');
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Connection failed.");
+                overlay.classList.add('hidden');
+                btn.disabled = false;
+            }
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function switchTab(tab) {
+            const btnWrite = document.getElementById('tab-write');
+            const btnHistory = document.getElementById('tab-history');
+            const colWrite = document.getElementById('col-write');
+            const colHistory = document.getElementById('col-history');
+
+            if (tab === 'write') {
+                btnWrite.className = "flex-1 py-2 rounded-lg text-sm font-medium transition bg-white text-indigo-700 shadow-sm";
+                btnHistory.className = "flex-1 py-2 rounded-lg text-sm font-medium text-gray-500 hover:text-indigo-600 transition";
+
+                colHistory.classList.add('hidden');
+                colHistory.classList.remove('flex'); // Ensure hidden logic works
+            } else {
+                btnHistory.className = "flex-1 py-2 rounded-lg text-sm font-medium transition bg-white text-indigo-700 shadow-sm";
+                btnWrite.className = "flex-1 py-2 rounded-lg text-sm font-medium text-gray-500 hover:text-indigo-600 transition";
+
+                colHistory.classList.remove('hidden');
+                colHistory.classList.add('flex');
+            }
+        }
+    </script>
+</body>
+
+</html>
