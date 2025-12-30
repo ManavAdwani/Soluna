@@ -14,6 +14,11 @@ Soluna is built with the belief that mental health support should be accessible,
 
 ## ✨ Key Features
 
+### 📱 Progressive Web App (PWA)
+- **Install Soluna**: Add Soluna to your home screen on Mobile or Desktop for a native app experience.
+- **Offline Support**: Core features load instantly even with spotty internet connection.
+- **Immersive**: Runs in standalone mode (no browser address bar) for a cleaner therapeutic environment.
+
 ### 🎙️ Immersive Voice Mode
 Talk to Soluna naturally using your voice.
 - **Speech-to-Text**: Instant transcription of your spoken words.

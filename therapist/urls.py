@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from django.views.generic import TemplateView
 from django.contrib.auth import views as auth_views
 
 
@@ -18,4 +19,7 @@ urlpatterns = [
     path('journal/', views.journal_view, name='journal'),
     path('api/journal/', views.save_journal_entry, name='save_journal_entry'),
     path('panic/', views.panic_view, name='panic'),
+    
+    # PWA Service Worker (Served from root for scope)
+    path('service-worker.js', views.service_worker_view, name='service-worker'),
 ]

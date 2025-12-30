@@ -437,3 +437,12 @@ def save_journal_entry(request):
 @login_required
 def panic_view(request):
     return render(request, 'panic.html')
+
+def service_worker_view(request):
+    sw_path = os.path.join(settings.BASE_DIR, "static", "service-worker.js")
+    try:
+        with open(sw_path, 'r') as f:
+            content = f.read()
+        return HttpResponse(content, content_type='application/javascript')
+    except FileNotFoundError:
+        return HttpResponse("Service Worker not found", status=404)
