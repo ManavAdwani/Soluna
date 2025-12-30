@@ -1,7 +1,9 @@
 # 🌙 Soluna - AI Therapist
 
 <div align="center">
-  <img src="https://i.ibb.co/KjtG8Pq8/Capture.png" alt="Soluna Dashboard" width="100%" />
+ <img src="https://i.ibb.co/VWyPfdC5/screencapture-localhost-8000-2025-12-29-13-27-10.png" alt="screencapture localhost 8000 2025 12 29 13 27 10" border="0">
+ <img src="https://i.ibb.co/spk5Krhz/screencapture-localhost-8000-2025-12-29-13-32-19.png" alt="screencapture localhost 8000 2025 12 29 13 32 19" border="0">
+ <img src="https://i.ibb.co/tMK0R9yw/screencapture-localhost-8000-dashboard-2025-12-29-13-33-13.png" alt="screencapture localhost 8000 dashboard 2025 12 29 13 33 13" border="0">
 </div>
 
 ## 📖 Overview
@@ -36,6 +38,17 @@ Talk to Soluna naturally using your voice.
   - **Desktop**: Split-screen view (Past entries vs. Editor).
   - **Mobile**: Intuitive Tab system ([Write] | [History]) for distraction-free journaling.
 - **Secure Storage**: All entries are private and stored securely.
+
+### 🚨 Panic Mode (SOS)
+- **Instant Relief**: A dedicated "Break Glass" feature for high-anxiety moments.
+- **Guided Breathing**: Visual 4-7-8 breathing circle synchronized with a calming voice.
+- **Voice Guidance**: Uses high-quality ElevenLabs audio to guide you through "Inhale," "Hold," and "Exhale" phases.
+- **One-Click Access**: Prominent SOS button available from any screen.
+
+### ⚡ Gen Z Mode
+- **Persona Toggle**: Switch Soluna from a "Professional Therapist" to a "Ride-or-Die Bestie."
+- **Tough Love**: Gets real with you. No generic "I understand." Expect slang, direct advice, and genuine reactions.
+- **Dynamic Responses**: Uses a specialized system prompt to maintain a consistent, supportive, but casual friend persona.
 
 ### 🧘 Therapeutic Exercises
 - **Integrated Videos**: Curated therapeutic exercises (e.g., Box Breathing, Grounding).

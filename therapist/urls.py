@@ -17,4 +17,5 @@ urlpatterns = [
     path('api/dashboard/', views.dashboard_api, name='dashboard_api'),
     path('journal/', views.journal_view, name='journal'),
     path('api/journal/', views.save_journal_entry, name='save_journal_entry'),
+    path('panic/', views.panic_view, name='panic'),
 ]

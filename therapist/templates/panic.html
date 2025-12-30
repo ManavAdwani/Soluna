@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soluna - Breathe</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
+            height: 100vh;
+            overflow: hidden;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Breathing Animation */
+        .breath-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            transition: all 4s ease-in-out;
+        }
+
+        .inner-circle {
+            width: 150px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 40px rgba(165, 180, 252, 0.6);
+        }
+
+        .outer-circle {
+            width: 150px;
+            height: 150px;
+            background: rgba(165, 180, 252, 0.2);
+            z-index: 5;
+            animation: breathe 8s infinite ease-in-out;
+        }
+
+        .outer-circle-2 {
+            width: 150px;
+            height: 150px;
+            background: rgba(165, 180, 252, 0.1);
+            z-index: 1;
+            animation: breathe 8s infinite ease-in-out;
+            animation-delay: 0.5s;
+        }
+
+        @keyframes breathe {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.3;
+            }
+
+            40% {
+                transform: scale(2.2);
+                /* Inhale peak */
+                opacity: 0.6;
+            }
+
+            60% {
+                transform: scale(2.2);
+                /* Hold */
+                opacity: 0.6;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 1s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="relative">
+
+    <!-- SOS Header -->
+    <div class="absolute top-8 text-center fade-in">
+        <h1 class="text-3xl md:text-4xl font-light tracking-wide text-indigo-100">You are safe.</h1>
+        <p class="text-indigo-300 mt-2">Just follow the circle.</p>
+    </div>
+
+    <!-- Breathing App -->
+    <div class="breath-container fade-in" style="animation-delay: 0.5s;">
+        <div class="circle outer-circle-2"></div>
+        <div class="circle outer-circle"></div>
+        <div class="circle inner-circle">
+            <span id="action-text" class="text-indigo-900 text-xl font-bold tracking-widest uppercase">Inhale</span>
+            <span id="timer" class="text-indigo-500 text-sm mt-1">4s</span>
+        </div>
+    </div>
+
+    <!-- Bottom Controls -->
+    <div class="absolute bottom-12 flex flex-col items-center gap-6 fade-in" style="animation-delay: 1s;">
+
+        <!-- Audio Guide Button -->
+        <button id="audio-btn" onclick="toggleGuide()"
+            class="flex items-center gap-3 bg-white/10 hover:bg-white/20 border border-white/20 px-6 py-3 rounded-full text-white transition backdrop-blur-md">
+            <i id="audio-icon" class="fas fa-volume-mute text-xl"></i>
+            <span>Enable Voice Guide</span>
+        </button>
+
+        <a href="/"
+            class="text-indigo-300 hover:text-white transition text-sm underline decoration-indigo-500/50 hover:decoration-white underline-offset-4">
+            I'm feeling better now
+        </a>
+    </div>
+
+    <!-- Minimal Audio for Background (Optional) -->
+    <audio id="calm-audio" loop>
+        <!-- Using a VERY standard, permissive source (Wikimedia Commons Nature Sound) -->
+        <source src="https://upload.wikimedia.org/wikipedia/commons/e/e7/06_Ocean_Surf_Sven.ogg" type="audio/ogg">
+    </audio>
+
+    <script>
+        const textEl = document.getElementById('action-text');
+
+        // State
+        let isGuideActive = false;
+        let lastSpokenPhase = "";
+
+        // Audio Buffers
+        const audioBuffers = {
+            "Inhale": null,
+            "Hold": null,
+            "Exhale": null
+        };
+
+        // Configuration
+        const phaseTexts = {
+            "Inhale": "Breathe in slowly",
+            "Hold": "Hold it",
+            "Exhale": "Let it all out"
+        };
+
+        // Text Update Logic
+        function updateText(phaseKey, className) {
+            textEl.innerText = phaseKey; // "Inhale", "Hold", etc.
+            textEl.className = className;
+
+            // Speak if guide active
+            if (isGuideActive && phaseKey !== lastSpokenPhase) {
+                // Play the audio corresponding to the phase
+                playBufferedAudio(phaseKey);
+                lastSpokenPhase = phaseKey;
+            }
+        }
+
+        function breathingLoop() {
+            // 0s: Inhale
+            setTimeout(() => {
+                updateText("Inhale", "text-indigo-900 text-2xl font-bold tracking-widest uppercase transition-all duration-1000");
+            }, 0);
+
+            // 3.2s: Hold
+            setTimeout(() => {
+                updateText("Hold", "text-indigo-900 text-xl font-medium tracking-widest uppercase transition-all duration-500");
+            }, 3200);
+
+            // 4.8s: Exhale
+            setTimeout(() => {
+                updateText("Exhale", "text-indigo-800 text-2xl font-bold tracking-widest uppercase transition-all duration-1000");
+            }, 4800);
+        }
+
+        // Init
+        breathingLoop();
+        setInterval(breathingLoop, 8000);
+
+        // Fetch ElevenLabs Audio
+        async function fetchAudio(key, phrase) {
+            if (audioBuffers[key]) return; // Already cached
+            console.log("Fetching audio for:", key);
+            try {
+                const response = await fetch('/tts/', {
+                    method: 'POST',
+                    body: JSON.stringify({ text: phrase }),
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                if (response.ok) {
+                    const blob = await response.blob();
+                    audioBuffers[key] = new Audio(URL.createObjectURL(blob));
+                    audioBuffers[key].volume = 1.0;
+                } else {
+                    console.error("TTS Failed for", key);
+                }
+            } catch (e) {
+                console.error("TTS Fetch Error:", e);
+            }
+        }
+
+        function playBufferedAudio(key) {
+            if (audioBuffers[key]) {
+                audioBuffers[key].currentTime = 0;
+                audioBuffers[key].play().catch(e => console.log("Play interrupted or blocked", e));
+            }
+            // NO FALLBACK to browser TTS (prevents mixed voices)
+        }
+
+        // Toggle Button Logic
+        const audioBtn = document.getElementById('audio-btn');
+        const bgAudio = document.getElementById('calm-audio');
+
+        async function toggleGuide() {
+            isGuideActive = !isGuideActive;
+
+            if (isGuideActive) {
+                // UI Update
+                audioBtn.innerHTML = '<i class="fas fa-spinner fa-spin text-xl"></i> <span>Preparing Voice...</span>';
+                audioBtn.classList.add('bg-white/20');
+                audioBtn.disabled = true; // Prevent clicks while loading
+
+                // Pre-fetch audios immediately with natural phrases
+                // We map Visual Key ("Inhale") -> Audio Phrase ("Breathe in slowly")
+                await Promise.all([
+                    fetchAudio("Inhale", phaseTexts["Inhale"]),
+                    fetchAudio("Hold", phaseTexts["Hold"]),
+                    fetchAudio("Exhale", phaseTexts["Exhale"])
+                ]);
+
+                audioBtn.disabled = false;
+                audioBtn.innerHTML = '<i class="fas fa-volume-up text-xl"></i> <span>Stop Voice Guide</span>';
+
+                // Try Background Audio 
+                bgAudio.volume = 0.3;
+                bgAudio.play().catch(e => console.log("Background audio blocked."));
+
+            } else {
+                // UI Update
+                audioBtn.innerHTML = '<i class="fas fa-volume-mute text-xl"></i> <span>Enable Voice Guide</span>';
+                audioBtn.classList.remove('bg-white/20');
+
+                bgAudio.pause();
+            }
+        }
+    </script>
+</body>
+
+</html>

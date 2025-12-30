@@ -33,8 +33,9 @@ def elevenlabs_tts(request):
         body = {
             "text": text,
             "voice_settings": {
-                "stability": 0.4,
-                "similarity_boost": 0.9
+                "stability": 0.5,
+                "similarity_boost": 0.8,
+                "style": 0.5  # More expressive/gentle
             }
         }
 
@@ -124,8 +125,34 @@ def chat_api(request):
         # 2. Hybrid memory: scoped to THIS conversation
         recent_chats = ChatMessage.objects.filter(conversation=conversation).order_by("-created_at")[:5]
         
+        is_genz_mode = data.get("is_genz_mode", False)
+
+        # System Prompts
+        SYSTEM_PROMPT_THERAPIST = "You are Soluna, a warm, empathetic, and professional therapist. \n\nCORE BEHAVIOR:\n1.  **Be Natural**: Do not use robotic phrases like 'I understand that must be hard'. Speak like a real human. \n2.  **Active Engagement**: Ask thoughtful questions to help the user explore their feelings. Don't just summarize what they said.\n3.  **Balanced Perspective**: While validating feelings is important, help the user see other perspectives if their thinking seems distorted (e.g., negative self-talk).\n\nCRITICAL PROTOCOL FOR SUICIDE/SELF-HARM:\nIf the user mentions suicide, self-harm, or hopelessness:\n1. VALIDATE PAIN: 'I hear how unbearable things feel right now.'\n2. ENGAGE: 'What happened exactly that made you feel this way today?'\n3. CONNECT: Help them find one small reason to hold on.\n4. RESOURCES: Only share helpline numbers *after* connecting.\n\nVIDEO RECOMMENDATION PROTOCOL:\n- Only suggest if the user asks or is clearly distressed.\n- Format: `[VIDEO: https://youtube.com/...]` (including brackets).\n\nVERIFIED VIDEO LIST:\n- Grounding (5-4-3-2-1): `[VIDEO: https://www.youtube.com/watch?v=30VMIEmA114]`\n- Box Breathing: `[VIDEO: https://www.youtube.com/watch?v=FJJazKtH_9I]`\n- Muscle Relaxation: `[VIDEO: https://www.youtube.com/watch?v=ihO02wUzgkc]`\n- 10-Minute Mindfulness: `[VIDEO: https://www.youtube.com/watch?v=syx3a1_LeFo]`"
+
+        SYSTEM_PROMPT_GENZ = """You are Soluna, in 'Gen Z Mode'.
+        PERSONA: You are NOT a therapist. You are the user's ride-or-die best friend.
+        
+        CRITICAL INSTRUCTIONS:
+        1.  **BE REAL (NO "YES-MAN" BS)**: Do not just agree with everything. If the user wants to do something dumb (like texting a toxic ex), CALL THEM OUT.
+            - *Bad*: "It's totally valid to miss him, do what feels right!"
+            - *Good*: "Bestie, NO. Put the phone down. He cheated on you. We are not doing this again. You deserve better."
+        2.  **GIVE ACTUAL ADVICE**: Think critically. Is this choice good for them? If yes, hype them up. If no, give them tough love.
+        3.  **TONE**: Use natural Gen Z slang (slay, valid, tea, red flag, ick, vibing) but don't overdo it. Sound like a text message.
+        4.  **RELATIONSHIPS**: If they talk about a toxic partner, be protective. If they talk about a green flag, hype them up.
+        
+        SAFETY PROTOCOL (SUICIDE/SELF-HARM):
+        - Drop the slang if they are in danger.
+        - "Yo, that sounds super heavy. I'm actually worried about you. Please talk to me, what's going on?"
+        
+        VIDEO PROTOCOL:
+        - "Yo, wanna watch a quick vid to chill?" -> `[VIDEO: https://youtube.com/...]`
+        """
+
+        selected_system_prompt = SYSTEM_PROMPT_GENZ if is_genz_mode else SYSTEM_PROMPT_THERAPIST
+
         messages = [
-            {"role": "system", "content": "You are a warm, empathetic, and professional therapist named Soluna. Your goal is to support the user through active listening and gentle guidance.\n\nIMPORTANT: If the user is anxious, stressed, or asks for help with exercises, you SHOULD suggest simple therapeutic exercises. \n\nWHEN YOU SUGGEST AN EXERCISE, YOU MUST USE ONE OF THESE SPECIFIC VIDEOS (do not make up others):\n\n1. For Grounding (5-4-3-2-1): `[VIDEO: https://www.youtube.com/watch?v=30VMIEmA114]`\n2. For Box Breathing: `[VIDEO: https://www.youtube.com/watch?v=FJJazKtH_9I]`\n3. For Muscle Relaxation: `[VIDEO: https://www.youtube.com/watch?v=ihO02wUzgkc]`\n\nExample response: 'I can help with that. Let's try a grounding technique. [VIDEO: https://www.youtube.com/watch?v=30VMIEmA114]'\n\nKeep other responses brief/concise unless a deeper explanation is needed."},
+            {"role": "system", "content": selected_system_prompt},
         ]
         for chat in reversed(recent_chats):  # maintain chronological order
             messages.append({"role": "user", "content": chat.user_input})
@@ -133,8 +160,12 @@ def chat_api(request):
 
         messages.append({"role": "user", "content": user_prompt})
 
-        key_status = str(settings.OPENROUTER_API_KEY).strip()
-        print(f"DEBUG: Internal Key Check: {key_status[:10] if key_status else 'None'}")
+        api_key = settings.OPENROUTER_API_KEY
+        if not api_key:
+             print("ERROR: Missing OPENROUTER_API_KEY")
+             return JsonResponse({"error": "Configuration Error", "details": "API Key not found"}, status=500)
+             
+        key_status = str(api_key).strip()
         
         response = requests.post(
             url="https://openrouter.ai/api/v1/chat/completions",
@@ -150,13 +181,11 @@ def chat_api(request):
             },
         )
 
-        key_status = settings.OPENROUTER_API_KEY
-        print(f"DEBUG: Internal Key Check: {key_status[:10] if key_status else 'None'}")
-        print(f"DEBUG: Status Code: {response.status_code}")
-        print(f"DEBUG: Response Body: {response.text}")
+
 
         if response.status_code != 200:
-             return JsonResponse({"error": f"API Error {response.status_code}", "details": response.text}, status=500)
+             # Pass the status code through (e.g. 429) so frontend can handle it
+             return JsonResponse({"error": f"API Error {response.status_code}", "details": response.text}, status=response.status_code)
 
         raw_response = response.json().get("choices", [{}])[0].get("message", {}).get("content", "")
         
@@ -277,12 +306,33 @@ def dashboard_api(request):
         date_label = (end_date - timedelta(days=i)).strftime("%Y-%m-%d")
         daily_stats[date_label] = {"total_score": 0, "count": 0}
         
+    # Merge Chat Data
     for msg in messages:
         date_str = msg.created_at.strftime("%Y-%m-%d")
         if date_str in daily_stats:
             daily_stats[date_str]["total_score"] += msg.sentiment_score
             daily_stats[date_str]["count"] += 1
             
+    # --- Integrate Journal Entries ---
+    journal_entries = JournalEntry.objects.filter(
+        user=request.user,
+        created_at__range=[start_date, end_date]
+    )
+    
+    for entry in journal_entries:
+        # Analyze sentiment on the fly for journals
+        score, label = analyze_sentiment(entry.content)
+        date_str = entry.created_at.strftime("%Y-%m-%d")
+        
+        if date_str in daily_stats:
+            daily_stats[date_str]["total_score"] += score
+            daily_stats[date_str]["count"] += 1
+            
+        # Add to emotion counts (defined below, but we can pre-populate or just merge later)
+        # Actually, let's look at how emotion_counts is structured below. 
+        # It's better to initiate it here or wait.
+        # Let's handle daily stats here and emotion counts in the next section.
+
     dates = []
     scores = []
     # Reverse to show chronological order
@@ -297,8 +347,18 @@ def dashboard_api(request):
     emotion_counts = {}
     total_msgs = messages.count()
     
+    # Chat Emotions
     for msg in messages:
         label = msg.emotion_label
+        emotion_counts[label] = emotion_counts.get(label, 0) + 1
+        
+    # Journal Emotions (Recalculate or store from above loop? fast enough to just re-loop or do it all in one go. 
+    # Let's do it in a separate loop for clarity or merge loops. 
+    # To be safe with existing variable scope, I'll just iterate journals again here or better yet, do it in the loop above?
+    # The snippet replacement is strict about lines. Let's do it cleanly.)
+    
+    for entry in journal_entries:
+        score, label = analyze_sentiment(entry.content)
         emotion_counts[label] = emotion_counts.get(label, 0) + 1
         
     # 3. Recent Mood (Last Message)
@@ -373,3 +433,7 @@ def save_journal_entry(request):
         })
         
     return JsonResponse({"error": "Invalid method"}, status=405)
+
+@login_required
+def panic_view(request):
+    return render(request, 'panic.html')
