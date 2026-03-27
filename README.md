@@ -1,8 +1,8 @@
 # 🌙 Soluna - AI Therapist
 
 <div align="center">
- <img src="https://i.ibb.co/spk5Krhz/screencapture-localhost-8000-2025-12-29-13-32-19.png" alt="screencapture localhost 8000 2025 12 29 13 32 19" border="0">
- <img src="https://i.ibb.co/tMK0R9yw/screencapture-localhost-8000-dashboard-2025-12-29-13-33-13.png" alt="screencapture localhost 8000 dashboard 2025 12 29 13 33 13" border="0">
+ <img src="https://ibb.co/Xxvx8Bb1">
+ <img src="https://ibb.co/b5tphTXJ" border="0">
 </div>
 
 ## 📖 Overview
