@@ -1,8 +1,8 @@
 # 🌙 Soluna - AI Therapist
 
 <div align="center">
- <img src="https://ibb.co/Xxvx8Bb1">
- <img src="https://ibb.co/b5tphTXJ" border="0">
+ <img src="https://i.ibb.co/60f0Bhmz/ai-therapist.png" alt="ai therapist" border="0">
+ <img src="https://i.ibb.co/KxnCZdWw/dashboard.png" alt="dashboard" border="0">
 </div>
 
 ## 📖 Overview
